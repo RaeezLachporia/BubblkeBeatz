@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
@@ -41,6 +41,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 originalNoteSize;
 
     [Header("generic variable")]
+    [SerializeField] private Slider chargeSlider;
     private Rigidbody2D rb;
     private PlayerInputActions inputActions;
     private Vector2 moveInput;
@@ -53,6 +54,7 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        
         inputActions = new PlayerInputActions();
         inputActions.Enable();
 
@@ -131,6 +133,8 @@ public class PlayerMovement : MonoBehaviour
             chargedNote.transform.localScale = originalNoteSize * scale;
 
             chargedNote.transform.position = firePoint.position;
+
+            chargeSlider.value = t;
         }
     }
 
@@ -172,6 +176,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void StartCharging()
     {
+        chargeSlider.gameObject.SetActive(true);
+        chargeSlider.value = 0f;
         if (chargedNote != null)
         {
             return;
@@ -190,5 +196,6 @@ public class PlayerMovement : MonoBehaviour
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
         chargedNote = null;
         chargeTime = 0f;
+        chargeSlider.gameObject.SetActive(false);
     }
 }
