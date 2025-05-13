@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7915738140755667526}
   - component: {fileID: 5980923098126789775}
   - component: {fileID: -6517399507081158272}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -136,6 +136,7 @@ MonoBehaviour:
   notePrefab: {fileID: 8632186044215546599, guid: a67294709609dcb49921a2fdd5a76114, type: 3}
   firePoint: {fileID: 2383522030189037050}
   noteCooldown: 0.8
+  shootBufferTime: 0.2
   jumpBufferTime: 0.1
   coyoteTime: 0.1
 --- !u!114 &5980923098126789775
@@ -223,7 +224,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4029803095783361590}
   - component: {fileID: 6618783407979164836}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -306,7 +307,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2383522030189037050}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Shootpoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
