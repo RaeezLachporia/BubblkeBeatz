@@ -2397,6 +2397,26 @@ PrefabInstance:
       propertyPath: jumpBufferTime
       value: 0.2
       objectReference: {fileID: 0}
+    - target: {fileID: 7915738140755667526, guid: f9c3b477dd910024fbba4230397f2668, type: 3}
+      propertyPath: chargeScale.m_Curve.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7915738140755667526, guid: f9c3b477dd910024fbba4230397f2668, type: 3}
+      propertyPath: chargeScale.m_Curve.Array.data[1].time
+      value: 1.0041809
+      objectReference: {fileID: 0}
+    - target: {fileID: 7915738140755667526, guid: f9c3b477dd910024fbba4230397f2668, type: 3}
+      propertyPath: chargeScale.m_Curve.Array.data[1].value
+      value: 1.0023575
+      objectReference: {fileID: 0}
+    - target: {fileID: 7915738140755667526, guid: f9c3b477dd910024fbba4230397f2668, type: 3}
+      propertyPath: chargeScale.m_Curve.Array.data[1].inSlope
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7915738140755667526, guid: f9c3b477dd910024fbba4230397f2668, type: 3}
+      propertyPath: chargeScale.m_Curve.Array.data[1].outSlope
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

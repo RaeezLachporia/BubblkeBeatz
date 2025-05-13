@@ -14,11 +14,33 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform firePoint;
     [SerializeField] private float noteCooldown = 0.3f;
     [SerializeField] private float shootBufferTime = 0.2f;
+    [SerializeField] private float maxChargeTime = 2f;
+    [SerializeField] private AnimationCurve chargeScale;
+
 
     [Header("Jump Buffer & Coyote Time")]
     [SerializeField] private float jumpBufferTime = 0.1f;
     [SerializeField] private float coyoteTime = 0.1f;
 
+    [Header("Dash variables")]
+    [SerializeField] private float dashSpeed = 25f;
+    [SerializeField] private float dashDuration = 0.2f;
+    [SerializeField] private float dashCooldown = 1f;
+
+    private bool isDashing = false;
+    private float dashTimeRemaining;
+    private float lastDashTime = Mathf.NegativeInfinity;
+    private Vector2 dashDirection;
+
+    [Header("Charged shot variables")]
+    private GameObject chargedNote;
+    [SerializeField]private float maxChargTime = 2f;
+    [SerializeField] private float maxScaleMultiplier = 2f;
+    private bool isCharging;
+    private float chargeTime;
+    private Vector3 originalNoteSize;
+
+    [Header("generic variable")]
     private Rigidbody2D rb;
     private PlayerInputActions inputActions;
     private Vector2 moveInput;
@@ -27,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
     private float coyoteTimeCounter;
     private float shootBufferCounter;
     private float nextFireTime;
-
+    
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -36,6 +58,9 @@ public class PlayerMovement : MonoBehaviour
 
         inputActions.Gameplay.Jump.performed += ctx => jumpBufferCounter = jumpBufferTime;
         inputActions.Gameplay.Shoot.performed += ctx => shootBufferCounter = shootBufferTime;
+        inputActions.Gameplay.Dash.performed += ctx => TryDash();
+        inputActions.Gameplay.ChargedShot.started += ctx => StartCharging();
+        inputActions.Gameplay.ChargedShot.canceled += ctx => ReleaseCharged();
     }
 
     private void OnDisable()
@@ -98,11 +123,33 @@ public class PlayerMovement : MonoBehaviour
             nextFireTime = Time.time + noteCooldown;
             shootBufferCounter = 0f;
         }
+        if (isCharging&&chargedNote!= null)
+        {
+            chargeTime += Time.deltaTime;
+            float t = Mathf.Clamp01(chargeTime / maxChargeTime);
+            float scale = Mathf.Lerp(1f, maxScaleMultiplier, t);
+            chargedNote.transform.localScale = originalNoteSize * scale;
+
+            chargedNote.transform.position = firePoint.position;
+        }
     }
 
     private void FixedUpdate()
     {
         rb.velocity = new Vector2(moveInput.x * speed, rb.velocity.y);
+        if (isDashing)
+        {
+            rb.velocity = new Vector2(moveInput.normalized.x * dashSpeed, 0f);
+            dashTimeRemaining -= Time.fixedDeltaTime;
+            if (dashTimeRemaining<=0f)
+            {
+                isDashing = false;
+            }
+        }
+        else
+        {
+            rb.velocity = new Vector2(moveInput.x * speed, rb.velocity.y);
+        }
     }
 
     private void ShootNote()
@@ -110,5 +157,38 @@ public class PlayerMovement : MonoBehaviour
         GameObject note = Instantiate(notePrefab, firePoint.position, Quaternion.identity);
         NotePrefab projectile = note.GetComponent<NotePrefab>();
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+    }
+
+    private void TryDash()
+    {
+        if (Time.time >= lastDashTime + dashCooldown&& !isDashing&&moveInput != Vector2.zero)
+        {
+            isDashing = true;
+            dashTimeRemaining = dashDuration;
+            lastDashTime = Time.time;
+        }
+    }
+    
+
+    private void StartCharging()
+    {
+        if (chargedNote != null)
+        {
+            return;
+        }
+        chargedNote = Instantiate(notePrefab, firePoint.position, Quaternion.identity);
+        originalNoteSize = chargedNote.transform.localScale;
+        chargeTime = 0f;
+        isCharging = true;
+    }
+    private void ReleaseCharged()
+    {
+        if (chargedNote == null) return;
+        isCharging = false;
+
+        NotePrefab projectile = chargedNote.GetComponent<NotePrefab>();
+        projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+        chargedNote = null;
+        chargeTime = 0f;
     }
 }
