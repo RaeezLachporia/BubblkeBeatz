@@ -11,11 +11,13 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     public float playerDetectionRange = 3f;
     public Transform player;
-    public float hopForce = 5f;
+    public float hopForceX = 2f;
+    public float hopForceY = 5f;
+    public float hopCooldown = 1.5f;
 
     private Rigidbody2D rb;
     private bool movingRight = true;
-    private bool isChasing = false;
+    private bool canHop = true;
 
     void Start()
     {
@@ -29,13 +31,12 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (CanSeePlayer())
+        if (CanSeePlayer() && CanChaseSafely())
         {
             ChasePlayer();
         }
         else
         {
-            isChasing = false;
             Patrol();
         }
     }
@@ -43,10 +44,11 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
     void Patrol()
     {
         float direction = movingRight ? 1f : -1f;
-
         rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
 
+        // Ground check
         bool isGroundAhead = Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, groundLayer);
+        // Wall check
         Vector2 wallCheckDir = movingRight ? Vector2.right : Vector2.left;
         bool isWallAhead = Physics2D.Raycast(wallCheck.position, wallCheckDir, wallCheckDistance, groundLayer);
 
@@ -58,29 +60,26 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     void ChasePlayer()
     {
-        if (!isChasing)
-        {
-            isChasing = true;
-            Vector2 direction = (player.position.x > transform.position.x) ? Vector2.right : Vector2.left;
+        if (!canHop || player == null) return;
 
-            // Check ground ahead in chase direction
-            Vector2 groundCheckPos = groundCheck.position + new Vector3(direction.x * 0.5f, 0, 0);
-            bool groundAhead = Physics2D.Raycast(groundCheckPos, Vector2.down, groundCheckDistance, groundLayer);
+        canHop = false;
 
-            if (groundAhead)
-            {
-                // Flip to face player
-                if ((direction.x > 0 && !movingRight) || (direction.x < 0 && movingRight))
-                    Flip();
+        Vector2 direction = (player.position.x > transform.position.x) ? Vector2.right : Vector2.left;
 
-                // Small hop toward player
-                rb.velocity = new Vector2(direction.x * moveSpeed, hopForce);
-            }
-            else
-            {
-                isChasing = false; // Prevent hopping off platform
-            }
-        }
+        // Flip to face the player
+        if ((direction.x > 0 && !movingRight) || (direction.x < 0 && movingRight))
+            Flip();
+
+        // Apply directional hop force toward the player
+        rb.velocity = new Vector2(direction.x * hopForceX, hopForceY);
+
+        // Reset hop after cooldown
+        Invoke(nameof(ResetHop), hopCooldown);
+    }
+
+    void ResetHop()
+    {
+        canHop = true;
     }
 
     bool CanSeePlayer()
@@ -90,7 +89,14 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         float distanceToPlayer = Mathf.Abs(player.position.x - transform.position.x);
         float verticalDistance = Mathf.Abs(player.position.y - transform.position.y);
 
-        return distanceToPlayer <= playerDetectionRange && verticalDistance < 1.5f; // vertical clamp to ensure "same platform"
+        return distanceToPlayer <= playerDetectionRange && verticalDistance < 1.5f;
+    }
+
+    bool CanChaseSafely()
+    {
+        Vector2 direction = (player.position.x > transform.position.x) ? Vector2.right : Vector2.left;
+        Vector2 checkPos = groundCheck.position + new Vector3(direction.x * 0.5f, 0, 0);
+        return Physics2D.Raycast(checkPos, Vector2.down, groundCheckDistance, groundLayer);
     }
 
     void Flip()
@@ -112,10 +118,7 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
             Gizmos.DrawLine(wallCheck.position, wallCheck.position + dir * wallCheckDistance);
         }
 
-        if (player != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
-        }
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
     }
 }
