@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7915738140755667526}
   - component: {fileID: 5980923098126789775}
   - component: {fileID: -6517399507081158272}
+  - component: {fileID: -2023521832322987259}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -137,8 +138,21 @@ MonoBehaviour:
   firePoint: {fileID: 2383522030189037050}
   noteCooldown: 0.8
   shootBufferTime: 0.2
+  maxChargeTime: 2
+  chargeScale:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   jumpBufferTime: 0.1
   coyoteTime: 0.1
+  dashSpeed: 25
+  dashDuration: 0.2
+  dashCooldown: 1
+  maxChargTime: 2
+  maxScaleMultiplier: 2
+  chargeSlider: {fileID: 0}
 --- !u!114 &5980923098126789775
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -214,6 +228,19 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 2}
   m_EdgeRadius: 0
+--- !u!114 &-2023521832322987259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1723576729828650154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c2357140a1155947becae7c2f42ea5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healthManager: {fileID: 0}
 --- !u!1 &3129089800828997417
 GameObject:
   m_ObjectHideFlags: 0
