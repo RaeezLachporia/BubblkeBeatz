@@ -19,6 +19,8 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
     private bool movingRight = true;
     private bool canHop = true;
 
+    public int maxHealth = 3;
+    private int currentHeealth;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -27,6 +29,7 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         {
             player = GameObject.FindGameObjectWithTag("Player").transform;
         }
+        currentHeealth = maxHealth;
     }
 
     void FixedUpdate()
@@ -120,5 +123,21 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
+    }
+    public void TakeDamage(int damage)
+    {
+        currentHeealth -= damage;
+        Debug.Log("Enemy took " + damage + "health remaining" + currentHeealth);
+
+        if (currentHeealth <=0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log("Enemy is dead");
+        Destroy(gameObject);
     }
 }
