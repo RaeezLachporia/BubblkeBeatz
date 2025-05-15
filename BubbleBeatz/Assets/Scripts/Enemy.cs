@@ -138,6 +138,7 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
     private void Die()
     {
         Debug.Log("Enemy is dead");
+        ScoreManager.Instance.AddScore(100);
         Destroy(gameObject);
     }
 }
