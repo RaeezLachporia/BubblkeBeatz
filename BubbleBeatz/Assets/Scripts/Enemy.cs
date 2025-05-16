@@ -21,6 +21,7 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     public int maxHealth = 3;
     private int currentHeealth;
+    public bool isFinalPhase = false;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -124,14 +125,23 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
     }
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, bool isCharged = false)
     {
+        if (isFinalPhase && !isCharged)
+        {
+            Debug.Log("Enemy is invulnerable");
+            return;
+        }
         currentHeealth -= damage;
         Debug.Log("Enemy took " + damage + "health remaining" + currentHeealth);
 
         if (currentHeealth <=0)
         {
             Die();
+        }
+        else if(currentHeealth == 1 && !isFinalPhase)
+        {
+            enterFinalPhase();
         }
     }
 
@@ -140,5 +150,11 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         Debug.Log("Enemy is dead");
         ScoreManager.Instance.AddScore(100);
         Destroy(gameObject);
+    }
+
+    private void enterFinalPhase()
+    {
+        isFinalPhase = true;
+        Debug.Log("Enemy is invulnerable");
     }
 }
