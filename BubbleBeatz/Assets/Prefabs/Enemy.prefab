@@ -124,7 +124,7 @@ MonoBehaviour:
   - {fileID: 4139488827358644517}
   fullHeart: {fileID: 21300000, guid: a66e3379087c2d448be2e0a9ae2c3c86, type: 3}
   emptyHeart: {fileID: 0}
-  invulnerableHeart: {fileID: 0}
+  invulnerableHeart: {fileID: 21300000, guid: ae9a82f024995d2488c5210231c44454, type: 3}
 --- !u!1 &633966023777685869
 GameObject:
   m_ObjectHideFlags: 0
