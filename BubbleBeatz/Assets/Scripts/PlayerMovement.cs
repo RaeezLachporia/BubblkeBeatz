@@ -40,6 +40,8 @@ public class PlayerMovement : MonoBehaviour
     private float chargeTime;
     private Vector3 originalNoteSize;
 
+    [Header("Beat Manager variables for onBeat hits")]
+    private SpectrumAnalyzer spectrumizer;
     [Header("generic variable")]
     [SerializeField] private Slider chargeSlider;
     private Rigidbody2D rb;
@@ -63,6 +65,7 @@ public class PlayerMovement : MonoBehaviour
         inputActions.Gameplay.Dash.performed += ctx => TryDash();
         inputActions.Gameplay.ChargedShot.started += ctx => StartCharging();
         inputActions.Gameplay.ChargedShot.canceled += ctx => ReleaseCharged();
+        spectrumizer = FindAnyObjectByType<SpectrumAnalyzer>();
     }
 
     private void OnDisable()
@@ -191,11 +194,23 @@ public class PlayerMovement : MonoBehaviour
     {
         if (chargedNote == null) return;
         isCharging = false;
-
+        bool onBeat = !spectrumizer != null && spectrumizer.IsBeatDetected();
+        
         NotePrefab projectile = chargedNote.GetComponent<NotePrefab>();
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+        projectile.isCharged = true;
         chargedNote = null;
         chargeTime = 0f;
         chargeSlider.gameObject.SetActive(false);
+        if (onBeat)
+        {
+            projectile.isOnBeat = true;
+            Debug.Log("Shot is on beat ");
+        }
+        else
+        {
+            projectile.isOnBeat = false;
+            Debug.Log("Shot is not on beat");
+        }
     }
 }

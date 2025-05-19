@@ -10,6 +10,8 @@ public class BeatVisualizer : MonoBehaviour
     public float pulseScale = 1.2f;
     public float pulseDuration = 0.2f;
     private Vector3 originalScale;
+
+    
     private float timer;
 
     private void Start()
@@ -19,7 +21,7 @@ public class BeatVisualizer : MonoBehaviour
 
     private void Update()
     {
-        if (analyzer.IsBeatDetected())
+        if (analyzer.isBassBeatDetected())
         {
             timer = pulseDuration;
             pulseImage.rectTransform.localScale = originalScale * pulseScale;

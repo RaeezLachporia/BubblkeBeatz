@@ -8,6 +8,15 @@ public class NotePrefab : MonoBehaviour
     public Vector2 direction = Vector2.right;
     public int damage = 1;
     public LayerMask Ground;
+    public bool isCharged = false;
+    public bool isOnBeat = false;
+    private void Start()
+    {
+        if (isOnBeat)
+        {
+            transform.localScale *= 1.5f;
+        }
+    }
     private void Update()
     {
         transform.Translate(direction.normalized * speed * Time.deltaTime);
@@ -22,7 +31,7 @@ public class NotePrefab : MonoBehaviour
         EnemyBubbleBobbleAI enemy = collision.GetComponent<EnemyBubbleBobbleAI>();
         if (enemy != null)
         {
-            enemy.TakeDamage(damage);
+            enemy.TakeDamage(damage,isCharged);
             Destroy(gameObject);
         }
 

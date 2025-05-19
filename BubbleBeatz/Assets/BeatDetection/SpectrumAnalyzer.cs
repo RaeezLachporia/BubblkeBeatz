@@ -8,37 +8,64 @@ public class SpectrumAnalyzer : MonoBehaviour
     public FFTWindow fftWindow = FFTWindow.BlackmanHarris;
     public float[] spectrum;
     private AudioSource audioSource;
+    private float lastBeatTime=-999f;
+    private float beatLeeway = 0.15f;
+    private bool isBeat;
+    public float sensitivity = 1.5f;
+    public float beatCooldown = 0.15f;
+    public int bassBandCount = 20;
+    private float[] historyBuffer;
+    public int historyIndex = 0;
 
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
         spectrum = new float[spectrumSize];
+        historyBuffer = new float[43];
     }
 
     private void Update()
     {
         audioSource.GetSpectrumData(spectrum, 0, fftWindow);
-        float max = 0f;
-        int maxIndex = 0;
-        for (int i = 0; i < spectrumSize; i++)
+        float bassEnergy = 0f;
+        for (int i = 0; i < bassBandCount; i++)
         {
-            if (spectrum[i] >max)
-            {
-                max = spectrum[i];
-                maxIndex = i;
-            }
+            
+                bassEnergy += spectrum[i];
+            
         }
+        float averageEnergy = 0f;
+        foreach (float value in historyBuffer)
+        {
+            averageEnergy += value;
+        }
+        averageEnergy /= historyBuffer.Length;
+        historyBuffer[historyIndex] = bassEnergy;
+        historyIndex = (historyIndex + 1) % historyBuffer.Length;
+        if (bassEnergy > averageEnergy * sensitivity && Time.time - lastBeatTime > beatCooldown)
+        {
+            isBeat = true;
+            lastBeatTime = Time.time;
 
-        float freq = maxIndex * AudioSettings.outputSampleRate / 2 / spectrumSize;
-        Debug.Log("Peak frequency: " + freq + "Hz");
+        }
+        else
+        {
+            isBeat = false;
+        }
+        //float freq = maxIndex * AudioSettings.outputSampleRate / 2 / spectrumSize;
+        //Debug.Log("Peak frequency: " + freq + "Hz");
     }
     public bool IsBeatDetected()
     {
+        return isBeat;
+    }
+    public bool isBassBeatDetected()
+    {
         float bassEnergy = 0f;
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 10; i++)
         {
             bassEnergy += spectrum[i];
         }
-        return bassEnergy > 0.1f;
+        return bassEnergy > 0.05f;
     }
 }
