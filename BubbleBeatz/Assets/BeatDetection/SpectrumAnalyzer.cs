@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class SpectrumAnalyzer : MonoBehaviour
 {
-    public int spectrumSize = 512;
+    public int spectrumSize = 1024;
     public FFTWindow fftWindow = FFTWindow.BlackmanHarris;
     public float[] spectrum;
     private AudioSource audioSource;
@@ -22,6 +22,7 @@ public class SpectrumAnalyzer : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         spectrum = new float[spectrumSize];
         historyBuffer = new float[43];
+        bassBandCount = Mathf.Max(5,GetBassBandLimit(100f));
     }
 
     private void Update()
@@ -52,6 +53,11 @@ public class SpectrumAnalyzer : MonoBehaviour
         {
             isBeat = false;
         }
+        if (isBeat)
+        {
+            Debug.Log($"Beat detected at {Time.time:F2}");
+        }
+
         //float freq = maxIndex * AudioSettings.outputSampleRate / 2 / spectrumSize;
         //Debug.Log("Peak frequency: " + freq + "Hz");
     }
@@ -59,13 +65,27 @@ public class SpectrumAnalyzer : MonoBehaviour
     {
         return isBeat;
     }
-    public bool isBassBeatDetected()
+    public bool isBassBeatDetected(float leeway =0.15f)
     {
-        float bassEnergy = 0f;
+        /*float bassEnergy = 0f;
         for (int i = 0; i < 10; i++)
         {
             bassEnergy += spectrum[i];
         }
-        return bassEnergy > 0.05f;
+        float currentTime = Time.time;
+        bool isBeat = bassEnergy > 0.1f && currentTime - lastBeatTime > leeway;
+        if (isBeat)
+        {
+            lastBeatTime = currentTime;
+            return true;
+        }
+        return false;*/
+        return Time.time - lastBeatTime <= leeway;
+    }
+    public int GetBassBandLimit(float maxFreq = 100f)
+    {
+        float sampleRate = AudioSettings.outputSampleRate;
+        float freqPerBand = sampleRate / 2f / spectrumSize;
+        return Mathf.FloorToInt(maxFreq/freqPerBand);
     }
 }
