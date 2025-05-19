@@ -42,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Beat Manager variables for onBeat hits")]
     private SpectrumAnalyzer spectrumizer;
+    [SerializeField] private float beatLeeway = 0.2f;
     [Header("generic variable")]
     [SerializeField] private Slider chargeSlider;
     private Rigidbody2D rb;
@@ -194,7 +195,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (chargedNote == null) return;
         isCharging = false;
-        bool onBeat = !spectrumizer != null && spectrumizer.IsBeatDetected();
+        bool onBeat = spectrumizer != null && spectrumizer.isBassBeatDetected(beatLeeway);
         
         NotePrefab projectile = chargedNote.GetComponent<NotePrefab>();
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
@@ -211,6 +212,19 @@ public class PlayerMovement : MonoBehaviour
         {
             projectile.isOnBeat = false;
             Debug.Log("Shot is not on beat");
+        }
+
+        if (spectrumizer==null)
+        {
+            Debug.LogWarning("SpectrumAnalyzer not detected");
+        }
+        else if (spectrumizer.isBassBeatDetected(beatLeeway))
+        {
+            Debug.Log("BEAT DETECTED : SHOT ON BEAT");
+        }
+        else
+        {
+            Debug.Log("NO BEAT DETECTED : SHOT NOT ON BEAT");
         }
     }
 }
