@@ -22,6 +22,9 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
     public int maxHealth = 3;
     private int currentHeealth;
     public bool isFinalPhase = false;
+
+    public int CurrentHealth => currentHeealth;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
