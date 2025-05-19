@@ -218,7 +218,7 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.LogWarning("SpectrumAnalyzer not detected");
         }
-        else if (spectrumizer.isBassBeatDetected(beatLeeway))
+        if (spectrumizer.isBassBeatDetected(beatLeeway))
         {
             Debug.Log("BEAT DETECTED : SHOT ON BEAT");
         }
