@@ -226,5 +226,15 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.Log("NO BEAT DETECTED : SHOT NOT ON BEAT");
         }
+
+        /*float delta = Mathf.Abs(Time.time - spectrumizer.beatCooldown);
+        if (delta <= 0.05f)
+            Debug.Log("Perfect Hit!");
+        else if (delta <= 0.1f)
+            Debug.Log("Good Hit!");
+        else if (delta <= 0.15f)
+            Debug.Log("Late/Early!");
+        else
+            Debug.Log("Miss!");*/
     }
 }
