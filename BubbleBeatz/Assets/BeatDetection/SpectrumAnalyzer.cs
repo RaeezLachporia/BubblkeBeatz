@@ -67,20 +67,22 @@ public class SpectrumAnalyzer : MonoBehaviour
     }
     public bool isBassBeatDetected(float leeway =0.15f)
     {
-        /*float bassEnergy = 0f;
-        for (int i = 0; i < 10; i++)
+        float bassEnergy = 0f;
+        for (int i = 0; i < bassBandCount; i++)
         {
             bassEnergy += spectrum[i];
         }
-        float currentTime = Time.time;
-        bool isBeat = bassEnergy > 0.1f && currentTime - lastBeatTime > leeway;
-        if (isBeat)
+        float averageEnergy = 0f;
+        foreach (float value in historyBuffer)
         {
-            lastBeatTime = currentTime;
-            return true;
+            averageEnergy += value;
         }
-        return false;*/
-        return Mathf.Abs(Time.time - lastBeatTime) <= leeway;
+        averageEnergy /= historyBuffer.Length;
+        bool beatDetected = bassEnergy > averageEnergy * sensitivity;
+        float currentTime = Time.time;
+        bool inBeatWindow = currentTime - lastBeatTime < leeway;
+
+        return beatDetected && inBeatWindow;
     }
     public int GetBassBandLimit(float maxFreq = 100f)
     {
