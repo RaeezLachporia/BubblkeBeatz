@@ -3,11 +3,11 @@ using UnityEngine.UI;
 
 public class EnemyHealthUI : MonoBehaviour
 {
-    public EnemyBubbleBobbleAI enemy; // Reference to the enemy script
-    public Image[] hearts; // Assign 3 heart images in Inspector
+    public EnemyBubbleBobbleAI enemy; 
+    public Image[] hearts; 
     public Sprite fullHeart;
     public Sprite emptyHeart;
-    public Sprite invulnerableHeart; // Optional: for invulnerable state visual
+    public Sprite invulnerableHeart; 
 
     private void Start()
     {
