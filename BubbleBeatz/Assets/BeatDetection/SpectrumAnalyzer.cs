@@ -55,7 +55,7 @@ public class SpectrumAnalyzer : MonoBehaviour
         }
         if (isBeat)
         {
-            //Debug.Log($"Beat detected at {Time.time:F2}");
+            Debug.Log($"Beat detected at {Time.time:F2}");
         }
 
         //float freq = maxIndex * AudioSettings.outputSampleRate / 2 / spectrumSize;
@@ -67,22 +67,20 @@ public class SpectrumAnalyzer : MonoBehaviour
     }
     public bool isBassBeatDetected(float leeway =0.15f)
     {
-        float bassEnergy = 0f;
-        for (int i = 0; i < bassBandCount; i++)
+        /*float bassEnergy = 0f;
+        for (int i = 0; i < 10; i++)
         {
             bassEnergy += spectrum[i];
         }
-        float averageEnergy = 0f;
-        foreach (float value in historyBuffer)
-        {
-            averageEnergy += value;
-        }
-        averageEnergy /= historyBuffer.Length;
         float currentTime = Time.time;
-        bool beatRecentlyDetected = currentTime - lastBeatTime <= leeway;
-        bool isBassPeak = bassEnergy > averageEnergy * sensitivity;
-        return beatRecentlyDetected && isBassPeak;
-       
+        bool isBeat = bassEnergy > 0.1f && currentTime - lastBeatTime > leeway;
+        if (isBeat)
+        {
+            lastBeatTime = currentTime;
+            return true;
+        }
+        return false;*/
+        return Time.time - lastBeatTime <= leeway;
     }
     public int GetBassBandLimit(float maxFreq = 100f)
     {
