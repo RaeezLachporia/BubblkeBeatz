@@ -16,23 +16,27 @@ public class SpectrumAnalyzer : MonoBehaviour
     public int bassBandCount = 20;
     private float[] historyBuffer;
     public int historyIndex = 0;
-
+    public float bassMaxFrequency = 40f;
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
         spectrum = new float[spectrumSize];
         historyBuffer = new float[43];
-        bassBandCount = Mathf.Max(5,GetBassBandLimit(100f));
+        bassBandCount = Mathf.Max(3,GetBassBandLimit(bassMaxFrequency));
     }
 
     private void Update()
     {
         audioSource.GetSpectrumData(spectrum, 0, fftWindow);
         float bassEnergy = 0f;
+        float maxVal = 0f;
         for (int i = 0; i < bassBandCount; i++)
         {
-            
+            if (spectrum[i]>0.005f)
+            {
                 bassEnergy += spectrum[i];
+                maxVal = Mathf.Max(maxVal, spectrum[i]);
+            }
             
         }
         float averageEnergy = 0f;
@@ -43,7 +47,9 @@ public class SpectrumAnalyzer : MonoBehaviour
         averageEnergy /= historyBuffer.Length;
         historyBuffer[historyIndex] = bassEnergy;
         historyIndex = (historyIndex + 1) % historyBuffer.Length;
-        if (bassEnergy > averageEnergy * sensitivity && Time.time - lastBeatTime > beatCooldown)
+        bool spike = maxVal > 0.01f;
+        bool beatDetected = bassEnergy > averageEnergy * sensitivity && Time.time - lastBeatTime > beatCooldown;
+        if (beatDetected)
         {
             isBeat = true;
             lastBeatTime = Time.time;
@@ -53,13 +59,9 @@ public class SpectrumAnalyzer : MonoBehaviour
         {
             isBeat = false;
         }
-        if (isBeat)
-        {
-           // Debug.Log($"Beat detected at {Time.time:F2}");
-        }
+        
 
-        //float freq = maxIndex * AudioSettings.outputSampleRate / 2 / spectrumSize;
-        //Debug.Log("Peak frequency: " + freq + "Hz");
+       
     }
     public bool IsBeatDetected()
     {
