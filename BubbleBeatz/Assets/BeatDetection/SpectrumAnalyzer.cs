@@ -17,6 +17,8 @@ public class SpectrumAnalyzer : MonoBehaviour
     private float[] historyBuffer;
     public int historyIndex = 0;
     public float bassMaxFrequency = 40f;
+    private List<float> recentBeats = new List<float>();
+    public float beatMemoryDuration = 1.0f;
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -27,9 +29,11 @@ public class SpectrumAnalyzer : MonoBehaviour
 
     private void Update()
     {
+       
         audioSource.GetSpectrumData(spectrum, 0, fftWindow);
         float bassEnergy = 0f;
         float maxVal = 0f;
+         
         for (int i = 0; i < bassBandCount; i++)
         {
             if (spectrum[i]>0.005f)
@@ -53,7 +57,9 @@ public class SpectrumAnalyzer : MonoBehaviour
         {
             isBeat = true;
             lastBeatTime = Time.time;
+            recentBeats.Add(lastBeatTime);
 
+            recentBeats.RemoveAll(t => Time.time > beatMemoryDuration);
         }
         else
         {
@@ -91,5 +97,16 @@ public class SpectrumAnalyzer : MonoBehaviour
         float sampleRate = AudioSettings.outputSampleRate;
         float freqPerBand = sampleRate / 2f / spectrumSize;
         return Mathf.FloorToInt(maxFreq/freqPerBand);
+    }
+    public bool isShotOnBeat(float shotTime, float leeway =0.15f)
+    {
+        foreach (float beatTime in recentBeats)
+        {
+            if (Mathf.Abs(shotTime-beatTime)<=leeway)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

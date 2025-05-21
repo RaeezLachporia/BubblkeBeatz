@@ -195,7 +195,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (chargedNote == null) return;
         isCharging = false;
-        bool onBeat = spectrumizer != null && spectrumizer.isBassBeatDetected(beatLeeway);
+        bool onBeat = spectrumizer != null && spectrumizer.isShotOnBeat(Time.time,beatLeeway);
         
         NotePrefab projectile = chargedNote.GetComponent<NotePrefab>();
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
