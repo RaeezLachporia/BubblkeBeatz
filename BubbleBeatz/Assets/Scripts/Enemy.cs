@@ -25,6 +25,12 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     public int CurrentHealth => currentHeealth;
 
+    public LayerMask enemyLayer;
+
+    public Transform enemyCheck;
+    public float enemyCheckDistance = 0.2f;
+   
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -55,11 +61,16 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
         // Ground check
         bool isGroundAhead = Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, groundLayer);
+
         // Wall check
         Vector2 wallCheckDir = movingRight ? Vector2.right : Vector2.left;
         bool isWallAhead = Physics2D.Raycast(wallCheck.position, wallCheckDir, wallCheckDistance, groundLayer);
 
-        if (!isGroundAhead || isWallAhead)
+        // Enemy check
+        Vector2 enemyCheckDir = movingRight ? Vector2.right : Vector2.left;
+        bool isEnemyAhead = Physics2D.Raycast(enemyCheck.position, enemyCheckDir, enemyCheckDistance, enemyLayer);
+
+        if (!isGroundAhead || isWallAhead || isEnemyAhead)
         {
             Flip();
         }
