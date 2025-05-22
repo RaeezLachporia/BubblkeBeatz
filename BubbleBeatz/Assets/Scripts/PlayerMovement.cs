@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
@@ -53,7 +54,7 @@ public class PlayerMovement : MonoBehaviour
     private float coyoteTimeCounter;
     private float shootBufferCounter;
     private float nextFireTime;
-    
+    public ShotFeedback shotfeedback;
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -227,6 +228,7 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("NO BEAT DETECTED : SHOT NOT ON BEAT");
         }
 
+        shotfeedback.ShowShootTimingFeedback();
         /*float delta = Mathf.Abs(Time.time - spectrumizer.beatCooldown);
         if (delta <= 0.05f)
             Debug.Log("Perfect Hit!");

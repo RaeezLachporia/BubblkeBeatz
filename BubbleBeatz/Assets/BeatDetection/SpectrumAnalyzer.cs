@@ -10,6 +10,8 @@ public class SpectrumAnalyzer : MonoBehaviour
     private AudioSource audioSource;
     private float lastBeatTime=-999f;
     private float beatLeeway = 0.15f;
+    public float maxLeeway = 0.25f;
+    public float earlyBias = 0.05f;
     private bool isBeat;
     public float sensitivity = 1.5f;
     public float beatCooldown = 0.15f;
@@ -102,11 +104,14 @@ public class SpectrumAnalyzer : MonoBehaviour
     {
         foreach (float beatTime in recentBeats)
         {
-            if (Mathf.Abs(shotTime-beatTime)<=leeway)
-            {
+            float delta = shotTime - beatTime;
+            if (delta >= -maxLeeway + earlyBias && delta <= maxLeeway)
                 return true;
-            }
         }
         return false;
     }
+    public float GetLastBeatTime()
+    {
+        return lastBeatTime;
+    }    
 }
