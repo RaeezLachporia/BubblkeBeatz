@@ -9,12 +9,19 @@ public class LevelManager : MonoBehaviour
     public Camera mainCamera;
     public RectTransform uiCanvas;
 
+    public MusicManager musicManager;
+
     public float levelHeight = 10f;
     public float transitionDuration = 2f;
 
-    public List<Transform> enemyGroups; // Each group is a parent of enemies (e.g. "Enemies lv1")
+    public List<Transform> enemyGroups; // Level-based enemy groups (e.g. Enemies lv1, Enemies lv2)
     private int currentLevel = 0;
     private bool transitioning = false;
+
+    void Start()
+    {
+        ActivateOnlyCurrentEnemyGroup();
+    }
 
     void Update()
     {
@@ -32,7 +39,8 @@ public class LevelManager : MonoBehaviour
 
         foreach (Transform enemy in currentGroup)
         {
-            if (enemy != null) return false;
+            if (enemy != null && enemy.gameObject.activeInHierarchy)
+                return false;
         }
 
         return true;
@@ -42,6 +50,12 @@ public class LevelManager : MonoBehaviour
     {
         transitioning = true;
         currentLevel++;
+
+        if (currentLevel >= enemyGroups.Count)
+        {
+            Debug.Log("All levels complete!");
+            yield break;
+        }
 
         float targetYOffset = -levelHeight * currentLevel;
 
@@ -71,6 +85,21 @@ public class LevelManager : MonoBehaviour
         mainCamera.transform.position = camTargetPos;
         uiCanvas.position = uiTargetPos;
 
+        ActivateOnlyCurrentEnemyGroup();
+
+        if (musicManager != null)
+        {
+            musicManager.PlayNextTrack();
+        }
+
         transitioning = false;
+    }
+
+    void ActivateOnlyCurrentEnemyGroup()
+    {
+        for (int i = 0; i < enemyGroups.Count; i++)
+        {
+            enemyGroups[i].gameObject.SetActive(i == currentLevel);
+        }
     }
 }
