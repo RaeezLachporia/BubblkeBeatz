@@ -12,7 +12,10 @@ public class ShotFeedback : MonoBehaviour
     public float lateThreshHold = 0.25f;
 
     private float lastBeatTime;
-
+    public void Start()
+    {
+        feedbackText.text = " ";
+    }
     private void Update()
     {
         //transform.position = playerTransform.position + offSet;
