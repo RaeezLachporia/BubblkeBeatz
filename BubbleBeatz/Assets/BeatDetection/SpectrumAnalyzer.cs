@@ -6,6 +6,8 @@ using System;
 public class SpectrumAnalyzer : MonoBehaviour
 {
     public event Action OnPrebeatWarning;
+    public float preBeatLeadTime = 0.3f;
+    private bool hasWarned = false;
     public int spectrumSize = 1024;
     public FFTWindow fftWindow = FFTWindow.BlackmanHarris;
     public float[] spectrum;
@@ -80,6 +82,16 @@ public class SpectrumAnalyzer : MonoBehaviour
             Invoke(nameof(TriggerPreBeatWarning), anticipateTime);
             recentBeats.Add(lastBeatTime);
             recentBeats.RemoveAll(t => Time.time - t > beatMemoryDuration);
+            hasWarned = false;
+        }
+        else
+        {
+            isBeat = false;
+            if (!hasWarned&& Time.time >= lastBeatTime + beatCooldown - preBeatLeadTime)
+            {
+                hasWarned = true;
+                OnPrebeatWarning?.Invoke();
+            }
         }
 
        
