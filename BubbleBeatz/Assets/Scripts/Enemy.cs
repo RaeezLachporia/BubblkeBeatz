@@ -29,8 +29,9 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     public Transform enemyCheck;
     public float enemyCheckDistance = 0.2f;
-   
 
+    public GameObject bubblePrefab;
+    private bool isTrapped = false;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();

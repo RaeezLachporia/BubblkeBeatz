@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 [RequireComponent(typeof(AudioSource))]
 public class SpectrumAnalyzer : MonoBehaviour
 {
+    public event Action OnPrebeatWarning;
     public int spectrumSize = 1024;
     public FFTWindow fftWindow = FFTWindow.BlackmanHarris;
     public float[] spectrum;
@@ -61,13 +63,24 @@ public class SpectrumAnalyzer : MonoBehaviour
             lastBeatTime = Time.time;
             recentBeats.Add(lastBeatTime);
 
-            recentBeats.RemoveAll(t => Time.time > beatMemoryDuration);
+            recentBeats.RemoveAll(t => Time.time-t > beatMemoryDuration);
         }
         else
         {
             isBeat = false;
         }
-        
+        if (beatDetected)
+        {
+            isBeat = true;
+            float timeSinceLastbeat = Time.time - lastBeatTime;
+            lastBeatTime = Time.time;
+            float estimateNextBeat = lastBeatTime + timeSinceLastbeat;
+            float anticipateTime = Mathf.Max(0.05f, timeSinceLastbeat - 0.1f);
+
+            Invoke(nameof(TriggerPreBeatWarning), anticipateTime);
+            recentBeats.Add(lastBeatTime);
+            recentBeats.RemoveAll(t => Time.time - t > beatMemoryDuration);
+        }
 
        
     }
@@ -105,7 +118,7 @@ public class SpectrumAnalyzer : MonoBehaviour
         foreach (float beatTime in recentBeats)
         {
             float delta = shotTime - beatTime;
-            if (delta >= -maxLeeway + earlyBias && delta <= maxLeeway)
+            if (delta >= -maxLeeway - earlyBias && delta <= maxLeeway)
                 return true;
         }
         return false;
@@ -114,4 +127,9 @@ public class SpectrumAnalyzer : MonoBehaviour
     {
         return lastBeatTime;
     }    
+
+    private void TriggerPreBeatWarning()
+    {
+        OnPrebeatWarning?.Invoke();
+    }
 }
