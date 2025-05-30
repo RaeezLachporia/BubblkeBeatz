@@ -22,7 +22,10 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
     public int maxHealth = 3;
     private int currentHeealth;
     public bool isFinalPhase = false;
-
+    NotePrefab projectile;
+    public SpectrumAnalyzer spectrumm;
+    
+    
     public int CurrentHealth => currentHeealth;
 
     public LayerMask enemyLayer;
@@ -34,6 +37,7 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
     private bool isTrapped = false;
     void Start()
     {
+        spectrumm = FindAnyObjectByType<SpectrumAnalyzer>();
         rb = GetComponent<Rigidbody2D>();
 
         if (player == null && GameObject.FindGameObjectWithTag("Player") != null)
@@ -140,7 +144,7 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
     }
-    public void TakeDamage(int damage, bool isCharged = false)
+    public void TakeDamage(int damage, bool isCharged = false, bool isOnbeat = false)
     {
         if (isFinalPhase && !isCharged)
         {
@@ -162,9 +166,11 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     private void Die()
     {
+        
         Debug.Log("Enemy is dead");
         ScoreManager.Instance.AddScore(100);
         Destroy(gameObject);
+        
     }
 
     private void enterFinalPhase()

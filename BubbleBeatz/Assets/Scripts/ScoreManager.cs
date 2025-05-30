@@ -21,12 +21,12 @@ public class ScoreManager : MonoBehaviour
         UpdateScoreUI();
     }
 
-    public void AddScore(int amount)
+    public void AddScore(int amount, int multiplier = 1)
     {
         score += amount;
         UpdateScoreUI();
     }
-
+    
     void UpdateScoreUI()
     {
         if (scoreText != null)
