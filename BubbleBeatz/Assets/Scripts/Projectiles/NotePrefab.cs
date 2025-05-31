@@ -32,13 +32,14 @@ public class NotePrefab : MonoBehaviour
         if (enemy != null)
         {
             enemy.TakeDamage(damage,isCharged, isOnBeat);
-            Destroy(gameObject);
+            
             
         }
-
+        Destroy(gameObject);
         if (((1<<collision.gameObject.layer) & Ground) !=0)
         {
             Destroy(gameObject);
         }
+        Debug.Log($"Projectile Info - charged: {isCharged},onBeat:{isOnBeat}");
     }
 }
