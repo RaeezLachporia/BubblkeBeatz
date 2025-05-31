@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class EnemyBubbleBobbleAI : MonoBehaviour
 {
@@ -35,6 +36,15 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     public GameObject bubblePrefab;
     private bool isTrapped = false;
+
+    public float deathBounceForceX = 3f;
+    public float deathBounceForceY = 7f;
+    public float deathBounceTorque = 100f; 
+    public float deathCleanupDelay = 2f;
+
+    private bool isDying = false;
+
+
     void Start()
     {
         spectrumm = FindAnyObjectByType<SpectrumAnalyzer>();
@@ -49,6 +59,8 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isDying) return;
+
         if (CanSeePlayer() && CanChaseSafely())
         {
             ChasePlayer();
@@ -144,6 +156,8 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
     }
+
+
     public void TakeDamage(int damage, bool isCharged = false, bool isOnbeat = false)
     {
         if (isFinalPhase && !isCharged)
@@ -164,19 +178,46 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         }
     }
 
+    public IEnumerator BounceDeath()
+    {
+        isDying = true; // disable movement logic
+
+        Collider2D col = GetComponent<Collider2D>();
+        if (col) col.enabled = false;
+
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 1f; // ensure gravity is enabled
+        rb.freezeRotation = false; // allow rotation for bounce effect
+
+        float direction = transform.position.x > player.position.x ? 1f : -1f;
+
+        // Add bounce velocity
+        rb.velocity = new Vector2(direction * deathBounceForceX, deathBounceForceY);
+
+        // Add torque for spin
+        rb.AddTorque(direction * deathBounceTorque);
+
+        yield return new WaitForSeconds(deathCleanupDelay);
+
+        Destroy(gameObject);
+    }
+
     private void Die(bool wasCharged, bool wasOnbeat)
     {
         int baseScore = 100;
         int finalScore = baseScore;
         if (isFinalPhase && wasCharged&&wasOnbeat)
         {
+            
             finalScore *= 3;
             Debug.Log("Triple points");
+            StartCoroutine(BounceDeath());
         }
         Debug.Log("Enemy is dead");
         ScoreManager.Instance.AddScore(finalScore);
-        Destroy(gameObject);
         
+        //Destroy(gameObject);
+
     }
 
     private void enterFinalPhase()
