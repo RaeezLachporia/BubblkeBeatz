@@ -156,7 +156,7 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
         if (currentHeealth <=0)
         {
-            Die();
+            Die(isCharged,isOnbeat);
         }
         else if(currentHeealth == 1 && !isFinalPhase)
         {
@@ -164,11 +164,17 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         }
     }
 
-    private void Die()
+    private void Die(bool wasCharged, bool wasOnbeat)
     {
-        
+        int baseScore = 100;
+        int finalScore = baseScore;
+        if (isFinalPhase && wasCharged&&wasOnbeat)
+        {
+            finalScore *= 3;
+            Debug.Log("Triple points");
+        }
         Debug.Log("Enemy is dead");
-        ScoreManager.Instance.AddScore(100);
+        ScoreManager.Instance.AddScore(finalScore);
         Destroy(gameObject);
         
     }
@@ -178,4 +184,6 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         isFinalPhase = true;
         Debug.Log("Enemy is invulnerable");
     }
+
+    
 }

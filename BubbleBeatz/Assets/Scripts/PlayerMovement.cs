@@ -168,6 +168,8 @@ public class PlayerMovement : MonoBehaviour
         GameObject note = Instantiate(notePrefab, firePoint.position, Quaternion.identity);
         NotePrefab projectile = note.GetComponent<NotePrefab>();
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+        projectile.isCharged = false;
+        projectile.isOnBeat = false;
     }
 
     private void TryDash()
@@ -203,6 +205,7 @@ public class PlayerMovement : MonoBehaviour
         NotePrefab projectile = chargedNote.GetComponent<NotePrefab>();
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
         projectile.isCharged = true;
+        projectile.isOnBeat = onBeat;
         chargedNote = null;
         chargeTime = 0f;
         chargeSlider.gameObject.SetActive(false);
