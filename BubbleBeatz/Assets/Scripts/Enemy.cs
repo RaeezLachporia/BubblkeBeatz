@@ -238,7 +238,7 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
         if (isFinalPhase && wasOnbeat)
         {
-            finalScore *= 3;
+            finalScore *=3;
             Debug.Log("Triple points for killing final phase enemy on beat!");
         }
 
