@@ -157,6 +157,21 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
     }
 
+    private void TrapInBubble()
+    {
+        isTrapped = true;
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 0f;
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+
+        if (bubblePrefab)
+        {
+            Instantiate(bubblePrefab, transform.position, Quaternion.identity, transform);
+        }
+
+        Debug.Log("Enemy is trapped in a bubble. Needs a charged shot to die.");
+    }
+
 
     public void TakeDamage(int damage, bool isCharged = false, bool isOnbeat = false)
     {
@@ -165,14 +180,22 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
             Debug.Log("Enemy is invulnerable");
             return;
         }
-        currentHeealth -= damage;
-        Debug.Log("Enemy took " + damage + "health remaining" + currentHeealth);
 
-        if (currentHeealth <=0)
+        currentHeealth -= damage;
+        Debug.Log("Enemy took " + damage + ", health remaining: " + currentHeealth);
+
+        if (currentHeealth <= 0)
         {
-            Die(isCharged,isOnbeat);
+            if (!isTrapped && !isCharged)
+            {
+                TrapInBubble();
+            }
+            else
+            {
+                Die(isCharged, isOnbeat);
+            }
         }
-        else if(currentHeealth == 1 && !isFinalPhase)
+        else if (currentHeealth == 1 && !isFinalPhase)
         {
             enterFinalPhase();
         }
@@ -204,20 +227,25 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     private void Die(bool wasCharged, bool wasOnbeat)
     {
+        if (!wasCharged)
+        {
+            Debug.LogWarning("Die() called without a charged shot! Shouldn't happen.");
+            return;
+        }
+
         int baseScore = 100;
         int finalScore = baseScore;
-        if (isFinalPhase && wasCharged&&wasOnbeat)
-        {
-            
-            finalScore *= 3;
-            Debug.Log("Triple points");
-            StartCoroutine(BounceDeath());
-        }
-        Debug.Log("Enemy is dead");
-        ScoreManager.Instance.AddScore(finalScore);
-        
-        //Destroy(gameObject);
 
+        if (isFinalPhase && wasOnbeat)
+        {
+            finalScore *= 3;
+            Debug.Log("Triple points for killing final phase enemy on beat!");
+        }
+
+        ScoreManager.Instance.AddScore(finalScore);
+        Debug.Log("Enemy is dead with score: " + finalScore);
+
+        StartCoroutine(BounceDeath());
     }
 
     private void enterFinalPhase()
