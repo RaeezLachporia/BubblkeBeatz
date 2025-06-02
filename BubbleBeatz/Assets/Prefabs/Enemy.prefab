@@ -253,7 +253,7 @@ MonoBehaviour:
   deathBounceForceX: 3
   deathBounceForceY: 7
   deathBounceTorque: 100
-  deathCleanupDelay: 10
+  deathCleanupDelay: 3
 --- !u!61 &298405746782613978
 BoxCollider2D:
   m_ObjectHideFlags: 0

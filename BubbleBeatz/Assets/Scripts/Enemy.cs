@@ -25,8 +25,11 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
     public bool isFinalPhase = false;
     NotePrefab projectile;
     public SpectrumAnalyzer spectrumm;
-    
-    
+
+    private static int bounceChainMultiplier = 1;
+    private static bool isChainKillActive = false;
+
+
     public int CurrentHealth => currentHeealth;
 
     public LayerMask enemyLayer;
@@ -201,27 +204,38 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         }
     }
 
-    public IEnumerator BounceDeath()
+    public IEnumerator BounceDeath(float bounceMultiplier = 1f)
     {
-        isDying = true; // disable movement logic
+        isDying = true;
 
         Collider2D col = GetComponent<Collider2D>();
-        if (col) col.enabled = false;
+        if (col) col.enabled = true;
 
         rb.velocity = Vector2.zero;
-        rb.gravityScale = 1f; // ensure gravity is enabled
-        rb.freezeRotation = false; // allow rotation for bounce effect
+        rb.gravityScale = 1f;
+        rb.freezeRotation = false;
 
         float direction = transform.position.x > player.position.x ? 1f : -1f;
 
-        // Add bounce velocity
-        rb.velocity = new Vector2(direction * deathBounceForceX, deathBounceForceY);
+        // Aggressive, chain-aware bounce
+        float totalX = deathBounceForceX * 1.5f * bounceMultiplier;
+        float totalY = deathBounceForceY * 1.5f * bounceMultiplier;
+        float totalTorque = deathBounceTorque * 2f * bounceMultiplier;
 
-        // Add torque for spin
-        rb.AddTorque(direction * deathBounceTorque);
+        rb.velocity = new Vector2(direction * totalX, totalY);
+        rb.AddTorque(direction * totalTorque);
+
+        gameObject.layer = LayerMask.NameToLayer("BouncingEnemy");
+
+        if (!isChainKillActive)
+        {
+            bounceChainMultiplier = 1;
+            isChainKillActive = true;
+        }
 
         yield return new WaitForSeconds(deathCleanupDelay);
 
+        isChainKillActive = false;
         Destroy(gameObject);
     }
 
@@ -254,5 +268,30 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         Debug.Log("Enemy is invulnerable");
     }
 
-    
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (!isDying || !isChainKillActive) return;
+
+        EnemyBubbleBobbleAI other = collision.gameObject.GetComponent<EnemyBubbleBobbleAI>();
+
+        if (other != null && !other.isDying && other != this)
+        {
+            bounceChainMultiplier *= 2;
+            int chainScore = 100 * bounceChainMultiplier;
+            ScoreManager.Instance.AddScore(chainScore);
+
+            // Calculate bounce intensity based on chain length
+            float bounceIntensity = Mathf.Log(bounceChainMultiplier, 2); // 1 for 2x, 2 for 4x, etc.
+            other.DieFromBounce(bounceIntensity);
+        }
+    }
+
+    public void DieFromBounce(float bounceMultiplier = 1f)
+    {
+        if (isDying) return;
+
+        StartCoroutine(BounceDeath(bounceMultiplier));
+    }
+
+
 }
