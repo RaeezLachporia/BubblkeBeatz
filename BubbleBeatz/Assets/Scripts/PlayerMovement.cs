@@ -244,4 +244,9 @@ public class PlayerMovement : MonoBehaviour
         else
             Debug.Log("Miss!");*/
     }
+    public void HandleDeath()
+    {
+        Debug.Log("Player has died");
+        Destroy(gameObject);
+    }
 }

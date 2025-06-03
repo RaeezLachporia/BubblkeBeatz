@@ -8,9 +8,13 @@ public class HealthManager : MonoBehaviour
     public Image heart3;
 
     private int currentHealth = 3;
-
+    [SerializeField] private PlayerMovement playerHealthStuff;
     private void Start()
     {
+        if (playerHealthStuff == null)
+        {
+            playerHealthStuff = FindAnyObjectByType<PlayerMovement>();
+        }
         UpdateHeartsUI();
     }
 
@@ -36,7 +40,14 @@ public class HealthManager : MonoBehaviour
 
     void PlayerDied()
     {
-        Debug.Log("Player Died!");
-        // Add your death logic here (disable movement, show Game Over screen, etc.)
+        Debug.Log("Calling method from other script");
+        if (playerHealthStuff != null)
+        {
+            playerHealthStuff.HandleDeath();
+        }
+        else
+        {
+            Debug.LogWarning("cant find reference to playermovement");
+        }
     }
 }
