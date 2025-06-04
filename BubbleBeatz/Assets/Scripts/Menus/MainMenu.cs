@@ -25,7 +25,7 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene(0);
 
     }
-<<<<<<< Updated upstream
+    //<<<<<<< Updated upstream
 
     public void Death()
     {
@@ -36,17 +36,18 @@ public class MainMenu : MonoBehaviour
     public void Victory()
     {
         SceneManager.LoadScene(4);
-
-=======
-    public void LoadHTP()
-    {
-        SceneManager.LoadScene(3);
     }
-    public void backToMenu()
-    {
-        SceneManager.LoadScene(0);
->>>>>>> Stashed changes
+        //=======
+        public void LoadHTP()
+        {
+            SceneManager.LoadScene(3);
+        }
+        public void backToMenu()
+        {
+            SceneManager.LoadScene(0);
+
+        }
+
+
     }
 
-
-}
