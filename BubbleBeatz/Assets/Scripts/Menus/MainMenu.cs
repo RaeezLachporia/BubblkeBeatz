@@ -26,7 +26,17 @@ public class MainMenu : MonoBehaviour
 
     }
 
-    
+    public void Death()
+    {
+        SceneManager.LoadScene(3);
+
+    }
+
+    public void Victory()
+    {
+        SceneManager.LoadScene(4);
+
+    }
 
 
 }
