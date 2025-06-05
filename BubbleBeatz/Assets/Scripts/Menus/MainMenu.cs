@@ -40,7 +40,7 @@ public class MainMenu : MonoBehaviour
         //=======
         public void LoadHTP()
         {
-            SceneManager.LoadScene(3);
+            SceneManager.LoadScene(5);
         }
         public void backToMenu()
         {
