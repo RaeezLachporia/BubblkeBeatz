@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
 {
@@ -54,6 +55,7 @@ public class LevelManager : MonoBehaviour
         if (currentLevel >= enemyGroups.Count)
         {
             Debug.Log("All levels complete!");
+            SceneManager.LoadScene("VictoryScene"); 
             yield break;
         }
 
