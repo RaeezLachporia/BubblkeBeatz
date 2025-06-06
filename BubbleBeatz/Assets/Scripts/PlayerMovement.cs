@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
@@ -248,5 +249,6 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.Log("Player has died");
         Destroy(gameObject);
+        SceneManager.LoadScene(3);
     }
 }
