@@ -1,15 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 [RequireComponent(typeof(AudioSource))]
 public class SpectrumAnalyzer : MonoBehaviour
 {
+    public event Action OnPrebeatWarning;
+    public float preBeatLeadTime = 0.3f;
+    private bool hasWarned = false;
     public int spectrumSize = 1024;
     public FFTWindow fftWindow = FFTWindow.BlackmanHarris;
     public float[] spectrum;
     private AudioSource audioSource;
     private float lastBeatTime=-999f;
     private float beatLeeway = 0.15f;
+    public float maxLeeway = 0.25f;
+    public float earlyBias = 0.05f;
     private bool isBeat;
     public float sensitivity = 1.5f;
     public float beatCooldown = 0.15f;
@@ -17,6 +23,8 @@ public class SpectrumAnalyzer : MonoBehaviour
     private float[] historyBuffer;
     public int historyIndex = 0;
     public float bassMaxFrequency = 40f;
+    private List<float> recentBeats = new List<float>();
+    public float beatMemoryDuration = 1.0f;
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -27,9 +35,11 @@ public class SpectrumAnalyzer : MonoBehaviour
 
     private void Update()
     {
+       
         audioSource.GetSpectrumData(spectrum, 0, fftWindow);
         float bassEnergy = 0f;
         float maxVal = 0f;
+         
         for (int i = 0; i < bassBandCount; i++)
         {
             if (spectrum[i]>0.005f)
@@ -53,13 +63,36 @@ public class SpectrumAnalyzer : MonoBehaviour
         {
             isBeat = true;
             lastBeatTime = Time.time;
+            recentBeats.Add(lastBeatTime);
 
+            recentBeats.RemoveAll(t => Time.time-t > beatMemoryDuration);
         }
         else
         {
             isBeat = false;
         }
-        
+        if (beatDetected)
+        {
+            isBeat = true;
+            float timeSinceLastbeat = Time.time - lastBeatTime;
+            lastBeatTime = Time.time;
+            float estimateNextBeat = lastBeatTime + timeSinceLastbeat;
+            float anticipateTime = Mathf.Max(0.05f, timeSinceLastbeat - 0.1f);
+
+            Invoke(nameof(TriggerPreBeatWarning), anticipateTime);
+            recentBeats.Add(lastBeatTime);
+            recentBeats.RemoveAll(t => Time.time - t > beatMemoryDuration);
+            hasWarned = false;
+        }
+        else
+        {
+            isBeat = false;
+            if (!hasWarned&& Time.time >= lastBeatTime + beatCooldown - preBeatLeadTime)
+            {
+                hasWarned = true;
+                OnPrebeatWarning?.Invoke();
+            }
+        }
 
        
     }
@@ -91,5 +124,24 @@ public class SpectrumAnalyzer : MonoBehaviour
         float sampleRate = AudioSettings.outputSampleRate;
         float freqPerBand = sampleRate / 2f / spectrumSize;
         return Mathf.FloorToInt(maxFreq/freqPerBand);
+    }
+    public bool isShotOnBeat(float shotTime, float leeway =0.15f)
+    {
+        foreach (float beatTime in recentBeats)
+        {
+            float delta = shotTime - beatTime;
+            if (delta >= -maxLeeway - earlyBias && delta <= maxLeeway)
+                return true;
+        }
+        return false;
+    }
+    public float GetLastBeatTime()
+    {
+        return lastBeatTime;
+    }    
+
+    private void TriggerPreBeatWarning()
+    {
+        OnPrebeatWarning?.Invoke();
     }
 }

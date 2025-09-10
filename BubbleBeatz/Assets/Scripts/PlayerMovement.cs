@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine.SceneManagement;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
@@ -53,9 +55,11 @@ public class PlayerMovement : MonoBehaviour
     private float coyoteTimeCounter;
     private float shootBufferCounter;
     private float nextFireTime;
+    public ShotFeedback shotfeedback;
     
     private void Awake()
     {
+        
         rb = GetComponent<Rigidbody2D>();
         
         inputActions = new PlayerInputActions();
@@ -88,7 +92,7 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale = new Vector3(1, 1, 1);
         else if (moveInput.x < 0)
             transform.localScale = new Vector3(-1, 1, 1);
-
+        
         // Timers
         jumpBufferCounter -= Time.deltaTime;
         shootBufferCounter -= Time.deltaTime;
@@ -165,6 +169,8 @@ public class PlayerMovement : MonoBehaviour
         GameObject note = Instantiate(notePrefab, firePoint.position, Quaternion.identity);
         NotePrefab projectile = note.GetComponent<NotePrefab>();
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+        projectile.isCharged = false;
+        projectile.isOnBeat = false;
     }
 
     private void TryDash()
@@ -195,11 +201,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (chargedNote == null) return;
         isCharging = false;
-        bool onBeat = spectrumizer != null && spectrumizer.isBassBeatDetected(beatLeeway);
+        bool onBeat = spectrumizer != null && spectrumizer.isBassBeatDetected(2f);
         
         NotePrefab projectile = chargedNote.GetComponent<NotePrefab>();
         projectile.direction = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
         projectile.isCharged = true;
+        projectile.isOnBeat = onBeat;
         chargedNote = null;
         chargeTime = 0f;
         chargeSlider.gameObject.SetActive(false);
@@ -227,6 +234,7 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("NO BEAT DETECTED : SHOT NOT ON BEAT");
         }
 
+        shotfeedback.ShowShootTimingFeedback();
         /*float delta = Mathf.Abs(Time.time - spectrumizer.beatCooldown);
         if (delta <= 0.05f)
             Debug.Log("Perfect Hit!");
@@ -236,5 +244,11 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("Late/Early!");
         else
             Debug.Log("Miss!");*/
+    }
+    public void HandleDeath()
+    {
+        Debug.Log("Player has died");
+        Destroy(gameObject);
+        SceneManager.LoadScene(3);
     }
 }

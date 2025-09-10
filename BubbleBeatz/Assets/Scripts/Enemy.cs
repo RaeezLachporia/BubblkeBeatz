@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class EnemyBubbleBobbleAI : MonoBehaviour
 {
@@ -22,6 +23,12 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
     public int maxHealth = 3;
     private int currentHeealth;
     public bool isFinalPhase = false;
+    NotePrefab projectile;
+    public SpectrumAnalyzer spectrumm;
+
+    private static int bounceChainMultiplier = 1;
+    private static bool isChainKillActive = false;
+
 
     public int CurrentHealth => currentHeealth;
 
@@ -29,10 +36,21 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     public Transform enemyCheck;
     public float enemyCheckDistance = 0.2f;
-   
+
+    public GameObject bubblePrefab;
+    private bool isTrapped = false;
+
+    public float deathBounceForceX = 3f;
+    public float deathBounceForceY = 7f;
+    public float deathBounceTorque = 100f; 
+    public float deathCleanupDelay = 2f;
+
+    private bool isDying = false;
+
 
     void Start()
     {
+        spectrumm = FindAnyObjectByType<SpectrumAnalyzer>();
         rb = GetComponent<Rigidbody2D>();
 
         if (player == null && GameObject.FindGameObjectWithTag("Player") != null)
@@ -44,6 +62,8 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isDying) return;
+
         if (CanSeePlayer() && CanChaseSafely())
         {
             ChasePlayer();
@@ -139,31 +159,107 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, playerDetectionRange);
     }
-    public void TakeDamage(int damage, bool isCharged = false)
+
+    private void TrapInBubble()
+    {
+        isTrapped = true;
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 0f;
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+
+        if (bubblePrefab)
+        {
+            Instantiate(bubblePrefab, transform.position, Quaternion.identity, transform);
+        }
+
+        Debug.Log("Enemy is trapped in a bubble. Needs a charged shot to die.");
+    }
+
+
+    public void TakeDamage(int damage, bool isCharged = false, bool isOnbeat = false)
     {
         if (isFinalPhase && !isCharged)
         {
             Debug.Log("Enemy is invulnerable");
             return;
         }
-        currentHeealth -= damage;
-        Debug.Log("Enemy took " + damage + "health remaining" + currentHeealth);
 
-        if (currentHeealth <=0)
+        currentHeealth -= damage;
+        Debug.Log("Enemy took " + damage + ", health remaining: " + currentHeealth);
+
+        if (currentHeealth <= 0)
         {
-            Die();
+            if (!isTrapped && !isCharged)
+            {
+                TrapInBubble();
+            }
+            else
+            {
+                Die(isCharged, isOnbeat);
+            }
         }
-        else if(currentHeealth == 1 && !isFinalPhase)
+        else if (currentHeealth == 1 && !isFinalPhase)
         {
             enterFinalPhase();
         }
     }
 
-    private void Die()
+    public IEnumerator BounceDeath(float bounceMultiplier = 1f)
     {
-        Debug.Log("Enemy is dead");
-        ScoreManager.Instance.AddScore(100);
+        isDying = true;
+
+        Collider2D col = GetComponent<Collider2D>();
+        if (col) col.enabled = true;
+
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 1f;
+        rb.freezeRotation = false;
+
+        float direction = transform.position.x > player.position.x ? 1f : -1f;
+
+        // Aggressive, chain-aware bounce
+        float totalX = deathBounceForceX * 1.5f * bounceMultiplier;
+        float totalY = deathBounceForceY * 1.5f * bounceMultiplier;
+        float totalTorque = deathBounceTorque * 2f * bounceMultiplier;
+
+        rb.velocity = new Vector2(direction * totalX, totalY);
+        rb.AddTorque(direction * totalTorque);
+
+        gameObject.layer = LayerMask.NameToLayer("BouncingEnemy");
+
+        if (!isChainKillActive)
+        {
+            bounceChainMultiplier = 1;
+            isChainKillActive = true;
+        }
+
+        yield return new WaitForSeconds(deathCleanupDelay);
+
+        isChainKillActive = false;
         Destroy(gameObject);
+    }
+
+    private void Die(bool wasCharged, bool wasOnbeat)
+    {
+        if (!wasCharged)
+        {
+            Debug.LogWarning("Die() called without a charged shot! Shouldn't happen.");
+            return;
+        }
+
+        int baseScore = 100;
+        int finalScore = baseScore;
+
+        if (isFinalPhase && wasOnbeat)
+        {
+            finalScore *=3;
+            Debug.Log("Triple points for killing final phase enemy on beat!");
+        }
+
+        ScoreManager.Instance.AddScore(finalScore);
+        Debug.Log("Enemy is dead with score: " + finalScore);
+
+        StartCoroutine(BounceDeath());
     }
 
     private void enterFinalPhase()
@@ -171,4 +267,31 @@ public class EnemyBubbleBobbleAI : MonoBehaviour
         isFinalPhase = true;
         Debug.Log("Enemy is invulnerable");
     }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (!isDying || !isChainKillActive) return;
+
+        EnemyBubbleBobbleAI other = collision.gameObject.GetComponent<EnemyBubbleBobbleAI>();
+
+        if (other != null && !other.isDying && other != this)
+        {
+            bounceChainMultiplier *= 2;
+            int chainScore = 100 * bounceChainMultiplier;
+            ScoreManager.Instance.AddScore(chainScore);
+
+            // Calculate bounce intensity based on chain length
+            float bounceIntensity = Mathf.Log(bounceChainMultiplier, 2); // 1 for 2x, 2 for 4x, etc.
+            other.DieFromBounce(bounceIntensity);
+        }
+    }
+
+    public void DieFromBounce(float bounceMultiplier = 1f)
+    {
+        if (isDying) return;
+
+        StartCoroutine(BounceDeath(bounceMultiplier));
+    }
+
+
 }

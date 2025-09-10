@@ -31,13 +31,15 @@ public class NotePrefab : MonoBehaviour
         EnemyBubbleBobbleAI enemy = collision.GetComponent<EnemyBubbleBobbleAI>();
         if (enemy != null)
         {
-            enemy.TakeDamage(damage,isCharged);
-            Destroy(gameObject);
+            enemy.TakeDamage(damage,isCharged, isOnBeat);
+            
+            
         }
-
+        Destroy(gameObject);
         if (((1<<collision.gameObject.layer) & Ground) !=0)
         {
             Destroy(gameObject);
         }
+        Debug.Log($"Projectile Info - charged: {isCharged},onBeat:{isOnBeat}");
     }
 }
